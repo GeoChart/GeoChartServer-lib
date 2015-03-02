@@ -1,0 +1,44 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>ch.uzh</groupId>
+	<artifactId>GeoViz</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+	<name>Geographic Visualization</name>
+
+
+	<properties>
+		<jstl.version>1.2</jstl.version>
+		<taglibs.version>1.1.2</taglibs.version>
+		<javaxservlet.version>3.1.0</javaxservlet.version>
+		<mysqlconnector.version>5.1.31</mysqlconnector.version>
+		<jsonsimple.version>1.1.1</jsonsimple.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- allowed values: R7, 1.0, 1.5, 2.0 or none -->
+		<wtp.version>none</wtp.version>
+	</properties>
+
+
+	<dependencies>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.0.13</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>${jsonsimple.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>${javaxservlet.version}</version>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
+</project>
