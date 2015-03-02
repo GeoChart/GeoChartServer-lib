@@ -1,0 +1,71 @@
+{
+	"data": {
+		"types": [
+			{
+				"type": "OBSERVED_PEERS",
+				"label": "Observed Peers"
+			},
+			{
+				"type": "MAX_SWARM_SIZE",
+				"label": "Max. Swarm Size"
+			}
+		],
+		"date": {
+			"value": "2015-02-27",
+			"format": "YYYY-MM-DD"
+		},
+		"csv": "http://kraken-vm.csg.uzh.ch:8080/kraken-ui/request/generic-map.csv",
+		"not-locatable": {
+			"label": "Not Locatable",
+			"values": [
+				{
+					"type": "OBSERVED_PEERS",
+					"value": 12,
+					"percent": 0.02124
+				},
+				{
+					"type": "MAX_SWARM_SIZE",
+					"value": 1,
+					"percent": 0.02124
+				}
+			]
+		},
+		"countries": [
+			{
+				"label": "Spain",
+				"code": "ES",
+				"values": [
+					{
+						"type": "OBSERVED_PEERS",
+						"value": 5451,
+						"percent": 12.12423
+					},
+					{
+						"type": "MAX_SWARM_SIZE",
+						"value": 16,
+						"percent": 12.12423
+					}
+				]
+			},
+			{
+				"label": "Switzerland",
+				"code": "CH",
+				"values": [
+					{
+						"type": "OBSERVED_PEERS",
+						"value": 2725,
+						"percent": 6.06212
+					},
+					{
+						"type": "MAX_SWARM_SIZE",
+						"value": 8,
+						"percent": 6.06212
+					}
+				]
+			},
+			
+			...
+			
+		]
+	}
+}
