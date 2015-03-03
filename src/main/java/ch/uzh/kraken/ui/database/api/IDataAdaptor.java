@@ -11,49 +11,6 @@ public interface IDataAdaptor {
 	
 	/**
 	 * @param date
-	 * @return expected:
-	 * {"LIST":[  
-     * 		{  
-     *    		"INFO_HASH":"8600313422E2D8EBC2CDA3CA04718A8A7FE33282",
-     *    		"FILESIZE":"1.5 GiB",
-     *    		"TITLE":"Al Filo Del Mañana [BluRay Screener][Español Castellano]",
-     *    		"PUBLISH_DATE":"2014-09-09",
-     *    		"OBSERVED_PEERS":3647,
-     *    		"MAX_SWARM_SIZE":948
-     * 		},
-     * 		....
-   	 *		]
-	 *	}
-	 */
-	public String getTorrentListAsJson(String date);
-	
-	
-	/**
-	 * @param infoHash
-	 * @return expected:
-	 * {  
-     *	"AXIS":["2014-09-10", ...],
-     *	"OBSERVED_PEERS":[ 7849, ...],
-     *	"SEEDERS":[ 5376, ...]
-     * }
-	 */
-	public String getTorrentDateObservedPeersAsJson(String infoHash);
-	
-	
-	/**
-	 * @param infoHash
-	 * @return expected:
-	 * {  
-	 *	 "FILESIZE":"1.5 GiB",
-	 *	 "TITLE":"Al Filo Del Mañana [BluRay Screener][Español Castellano]",
-	 *	 "PUBLISH_DATE":"2014-09-09"
-	 * }
-	 */
-	public String getTorrentDetailsFromInfoHashAsJson(String infoHash);
-	
-	
-	/**
-	 * @param date
 	 * @param infoHash
 	 * @return expected:{  
      *	"DATE":"2014-09-12",
@@ -71,7 +28,7 @@ public interface IDataAdaptor {
      *	"NOT_LOCATABLE_PEERS":1
      * }
 	 */
-	public String getSpecificMapDataAsJson(String date, String infoHash);
+	public String getSpecificMapDataAsJson(String date, String type);
 	
 	
 	/**
@@ -92,12 +49,6 @@ public interface IDataAdaptor {
 	 * }
 	 */
 	public String getGenericMapDataAsJson(String date);
-	
-	
-	/**
-	 * @return expected: 2014-09-15
-	 */
-	public String getNewestDate();
 	
 	public String getSpecificMapDataAsCsv(String date, String infoHash);
 	public String getGenericMapDataAsCsv(String date);

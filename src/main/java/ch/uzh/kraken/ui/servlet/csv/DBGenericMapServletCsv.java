@@ -24,7 +24,7 @@ public class DBGenericMapServletCsv extends HttpServlet {
 		String filename;
 
 		if(date == null) {
-			date = DataFactory.getDataInterface().getNewestDate();
+			date = DataFactory.getDataInterface().getDateBoundsTorrentListAsJSON();
 		}
 
 		filename = "kraken-map-data-" + date + ".csv";

@@ -23,27 +23,6 @@ public class MySQLAdaptor extends AbstractAdaptor implements IDataAdaptorFactory
 		return json;
 	}
 
-	@Override
-	public String getTorrentListAsJson(String date) {
-		TorrentList db = new TorrentList();
-		String json = db.getTorrentListAsJson(date);
-		return json;
-	}
-
-	@Override
-	public String getTorrentDateObservedPeersAsJson(String infoHash) {
-		DistributionOverTime db = new DistributionOverTime();
-		String json = db.getTorrentDateObservedPeersAsJson(infoHash);
-		return json;
-	}
-
-	@Override
-	public String getTorrentDetailsFromInfoHashAsJson(String infoHash) {
-		TorrentDetails db = new TorrentDetails();
-		String json = db.getTorrentDetailsFromInfoHashAsJson(infoHash);
-		return json;
-	}
-
 	public IDataAdaptor getSpecificAdaptorImpl() {
 		return new MySQLAdaptor();
 	}
