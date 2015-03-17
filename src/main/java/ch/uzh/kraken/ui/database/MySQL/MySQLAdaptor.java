@@ -4,254 +4,216 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Map;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import ch.uzh.kraken.ui.database.api.AbstractAdaptor;
 import ch.uzh.kraken.ui.database.api.IDataAdaptor;
 import ch.uzh.kraken.ui.database.api.IDataAdaptorFactory;
 import ch.uzh.kraken.ui.util.JsonErrors;
 import ch.uzh.kraken.ui.util.Validation;
 
-public class MySQLAdaptor extends AbstractAdaptor implements IDataAdaptorFactory {
+public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 
-	@Override
-	public String getDateBoundsTorrentListAsJSON() {
-		TorrentList db = new TorrentList();
-		String json = db.getDateBoundingAsJson();
-		return json;
-	}
+	final static String CSV_SEPARATOR = ";";
+	
+	private static Logger log = LoggerFactory.getLogger(MySQLAdaptor.class); 
 
 	public IDataAdaptor getSpecificAdaptorImpl() {
 		return new MySQLAdaptor();
 	}
 	
-	@SuppressWarnings("unchecked")
-	public String getSpecificMapDataAsJson(String date, String infoHash) {
-		JSONObject json;
-
-		if(infoHash == null || !Validation.validateInfoHash(infoHash)) {
-			json = JsonErrors.createStandardJsonError();
-		}
-		else {
-			try (Connection connection = MySQLConnectionFactory.getMySQlConnection())
-			{
-				if(date == null || !Validation.validateDate(date)) {
-					date = getNewestDate();
-				}
-				PreparedStatement statement = getSpecificMapDataStatement(date, infoHash, connection);
-				ResultSet resultSet = statement.executeQuery();
-				json = new JSONObject();
-				json.put("DATE", date);
-				json.put("INFO_HASH", infoHash);
-				json = createMapJson(resultSet, json);
-			}
-			catch(SQLException e) {
-				json = JsonErrors.createStandardJsonError();
-				e.printStackTrace();
-			}
-		}
-		return json.toJSONString();
-	}
-
-	protected String getTorrentTitle(String infoHash) {
-		final ResultSet resultSet;
-		String title = "";
-
+	@Override
+	public JSONObject getDateBounds() {
+		JSONObject obj = new JSONObject();
 		try (Connection connection = MySQLConnectionFactory.getMySQlConnection())
 		{
-			String sql = "";
-			PreparedStatement statement;
-
-			sql += "SELECT title ";
-			sql += "FROM statistics_torrents ";
-			sql += "WHERE HEX(info_hash) = ? ;";
-
-			statement = connection.prepareStatement(sql);
-			statement.setString(1, infoHash);
-			resultSet = statement.executeQuery();
-
-			while(resultSet.next()) {
-				title = resultSet.getString("title");
+			Statement stm = connection.createStatement();
+			stm.execute("SELECT MIN(date) AS date FROM Data");
+			ResultSet rs = stm.getResultSet();
+			rs.next();
+			String start = rs.getString("date");
+			
+			stm.execute("SELECT MAX(date) AS date FROM Data");
+			rs = stm.getResultSet();
+			rs.next();
+			String end = rs.getString("date");
+			
+			obj.put("FROM_DATE", start);
+			obj.put("TO_DATE", end);
+		} catch(SQLException e) {
+			obj = JsonErrors.createStandardJsonError();
+			log.error("Error in getDateBounds", e);
+		}
+		return obj;
+	}
+	
+	/**
+	 * { "types":[
+	         	 *   {
+	         	 *     "name":"A unique name",
+	         	 *     "label":"Human readable label used in UI",
+	         	 *     "unit":"Unit used in UI. Optional"
+	         	 *   },
+	         	 *   ...
+	         	 *   ]
+	         	 * }
+	         	 */
+	@Override
+	public JSONObject getType(String name) {
+		JSONObject obj = new JSONObject();
+		try (Connection connection = MySQLConnectionFactory.getMySQlConnection())
+		{
+			PreparedStatement stm = connection.prepareStatement("SELECT * from Type WHERE name = ?");
+			stm.setString(1, name);
+			stm.execute();
+			ResultSet rs = stm.getResultSet();
+			if(rs.next()){
+				obj.put("name", rs.getString("name"));
+				obj.put("label", rs.getString("label"));
+				obj.put("unit", rs.getString("unit"));
 			}
+			
+		} catch (SQLException e) {
+			log.error("Error in getType({})", name, e);
 		}
-		catch(SQLException e) {
-			e.printStackTrace();
-		}
-		return title;
+		return obj;
 	}
 
-	@SuppressWarnings("unchecked")
-	public String getGenericMapDataAsJson(String date) {
-		JSONObject json;
+	@Override
+	public JSONObject getTypes() {
+		JSONObject obj = new JSONObject();
+		JSONArray array = new JSONArray();
+		try (Connection connection = MySQLConnectionFactory.getMySQlConnection())
+		{
+			PreparedStatement stm = connection.prepareStatement("SELECT * from Type");
+			stm.execute();
+			ResultSet rs = stm.getResultSet();
+			while(rs.next()){
+				JSONObject type = new JSONObject();
+				type.put("name", rs.getString("name"));
+				type.put("label", rs.getString("label"));
+				type.put("unit", rs.getString("unit"));
+				array.add(type);
+			}
+		} catch (SQLException e) {
+			log.error("Error in getTypes()", e);
+		}
+		obj.put("types", array);
+		return obj;
+	}
 
+	@Override
+	public JSONObject getMapData(String date) {
+		Map<String, JSONObject> countries = new JSONObject();
+		JSONObject notLocatableValues = new JSONObject();
 		try (Connection connection = MySQLConnectionFactory.getMySQlConnection())
 		{
 			if(date == null || !Validation.validateDate(date)) {
 				date = getNewestDate();
 			}
-			PreparedStatement statement = getGenericMapDataStatement(date, connection);
-			ResultSet resultSet = statement.executeQuery();
-			json = new JSONObject();
-			json.put("DATE", date);
-			json = createMapJson(resultSet, json);
-		}
-		catch(SQLException e) {
-			json = JsonErrors.createStandardJsonError();
-			e.printStackTrace();
-		}
-		return json.toJSONString();
-	}
-
-	@SuppressWarnings("unchecked")
-	private JSONObject createMapJson(ResultSet resultSet, JSONObject json) throws SQLException {
-		JSONArray countryArray = new JSONArray();
-		int notLocatablePeers = 0;
-		double notLocatablePercentage = 0.0;
-
-		while(resultSet.next()) {
-			int observedPeers = resultSet.getInt("observed_peers");
-			int maxSwarmSize = resultSet.getInt("max_swarm_size");
-			double percentage = resultSet.getDouble("percentage");
-			String countryIsoCode = resultSet.getString("country_iso_code");
-
-			if(resultSet.wasNull() || countryIsoCode.equals("")) {
-				notLocatablePeers = resultSet.getInt("observed_peers");
-				notLocatablePercentage = resultSet.getDouble("percentage");
+			PreparedStatement stmt = connection.prepareStatement(
+			"SELECT countryCode, name, label, unit, value FROM Type, Data" + 
+			"WHERE date = ?" +
+			"AND Type.ID = Data.TypeID" +
+			"ORDER BY `Data`.`countryCode` `Data`.`name`  ASC");
+			
+			stmt.setString(1, date);
+			stmt.execute();
+			ResultSet rs = stmt.getResultSet();
+			while(rs.next()){
+				String country = rs.getString(1);
+				JSONObject countryObject;
+				if(country.isEmpty()){
+					countryObject = notLocatableValues;
+				} else {
+					if(countries.containsKey(country)){
+						countryObject = countries.get(country);
+					}else{
+						countryObject = new JSONObject();
+						countries.put(country, countryObject);
+					}
+				}
+				Map<String, String> value = new JSONObject();
+				value.put("value", rs.getString("value"));
+				countryObject.put(rs.getString("name"), value);
 			}
-			else {
-				JSONObject country = new JSONObject();
-				country.put("COUNTRY_CODE", countryIsoCode);
-				country.put("OBSERVED_PEERS", observedPeers);
-				country.put("MAX_SWARM_SIZE", maxSwarmSize);
-				country.put("PERCENTAGE", percentage);
-				countryArray.add(country);
-			}
+			
+		} catch (SQLException e) {
+			log.error("Error in getMapData({})", date, e);
 		}
-		json.put("COUNTRIES", countryArray);
-		json.put("NOT_LOCATABLE_PEERS", notLocatablePeers);
-		json.put("NOT_LOCATABLE_PERCENTAGE", notLocatablePercentage);
-		return json;
-	}
-
-	private PreparedStatement getSpecificMapDataStatement(String date, String infoHash, Connection connection) throws SQLException {
-		final StringBuffer sql = new StringBuffer();
-		final PreparedStatement statement;
-		final int maxSwarmSize = getMaxSwarmSize(date, infoHash, connection);
-		final int totalPeersObserved = getTotalPeersObserved(date, infoHash, connection);
-		final double factor = ((double) maxSwarmSize) / ((double) totalPeersObserved);
-
-		sql.append("SELECT country_iso_code, ");
-		sql.append("   COUNT(*) AS observed_peers, ");
-		sql.append("   CEIL(COUNT(*) * ? ) AS max_swarm_size, ");
-		sql.append("   ( COUNT(*) / ? ) * 100 AS percentage ");
-		sql.append("FROM statistics_peers ");
-		sql.append("WHERE date = ? ");
-		sql.append("AND HEX(info_hash) = ? ");
-		sql.append("GROUP BY country_iso_code ");
-		sql.append("ORDER BY observed_peers DESC;");
-
-		statement = connection.prepareStatement(sql.toString());
-		statement.setDouble(1, factor);
-		statement.setInt(2, totalPeersObserved);
-		statement.setString(3, date);
-		statement.setString(4, infoHash);
-		return statement;
-	}
-
-	private PreparedStatement getGenericMapDataStatement(String date, Connection connection) throws SQLException {
-		final StringBuffer sql = new StringBuffer();
-		final PreparedStatement statement;
-		final int maxSwarmSize = getMaxSwarmSize(date, connection);
-		final int totalPeersObserved = getTotalPeersObserved(date, connection);
-		final double factor = ((double) maxSwarmSize) / ((double) totalPeersObserved);
-
-		sql.append("SELECT country_iso_code, ");
-		sql.append("   COUNT(*) AS observed_peers, ");
-		sql.append("   CEIL(COUNT(*) * ? ) AS max_swarm_size, ");
-		sql.append("   ( COUNT(*) / ? ) * 100 AS percentage ");
-		sql.append("FROM ");
-		sql.append("   (SELECT country_iso_code, ");
-		sql.append("      ip_address, ");
-		sql.append("      date ");
-		sql.append("   FROM statistics_peers ");
-		sql.append("   WHERE date = ? ");
-		sql.append("   GROUP BY ip_address) ");
-		sql.append("   AS countries_over_all_torrents ");
-		sql.append("GROUP BY country_iso_code ");
-		sql.append("ORDER BY observed_peers DESC;");
-
-		statement = connection.prepareStatement(sql.toString());
-		statement.setDouble(1, factor);
-		statement.setInt(2, totalPeersObserved);
-		statement.setString(3, date);
-		return statement;
-	}
-
-	public String getNewestDate() {
-		String sql = "SELECT MAX(date) AS max_date FROM statistics_peers LIMIT 1";
-		ResultSet resultSet;
-		PreparedStatement statement;
-		String maxDate = "";
-
-		try (Connection connection = MySQLConnectionFactory.getMySQlConnection())
-		{
-			statement = connection.prepareStatement(sql);
-			resultSet = statement.executeQuery();
-			resultSet.next();
-			maxDate = resultSet.getString("max_date");
-		}
-		catch(SQLException e) {
-			e.printStackTrace();
-		}
-
-		return maxDate;
-	}
-
-	private Integer getTotalPeersObserved(String date, String infoHash, Connection connection) throws SQLException {
-		StringBuffer sql = new StringBuffer();
-		sql.append("SELECT COUNT(*) AS total FROM `statistics_peers` ");
-		sql.append("WHERE date = ? ");
-		if(infoHash != null) {
-			sql.append("AND HEX(info_hash) = ? ;");
-		}
-
-		PreparedStatement statement = connection.prepareStatement(sql.toString());
-		statement.setString(1, date);
-		if(infoHash != null) {
-			statement.setString(2, infoHash);
-		}
-		ResultSet resultSet = statement.executeQuery();
-		resultSet.next();
-		return resultSet.getInt("total");
-	}
-
-	private Integer getTotalPeersObserved(String date, Connection connection) throws SQLException {
-		return getTotalPeersObserved(date, null, connection);
-	}
-
-	private Integer getMaxSwarmSize(String date, String infoHash, Connection connection) throws SQLException {
-		StringBuffer sql = new StringBuffer();
-		sql.append("SELECT SUM(max_swarm_size) AS max_swarm_size ");
-		sql.append("FROM statistics_torrentmeta ");
-		sql.append("WHERE date = ? ");
-		if(infoHash != null) {
-			sql.append("AND HEX(info_hash) = ? ");
-		}
-
-		PreparedStatement statement = connection.prepareStatement(sql.toString());
-		statement.setString(1, date);
-		if(infoHash != null) {
-			statement.setString(2, infoHash);
-		}
-		ResultSet resultSet = statement.executeQuery();
-		resultSet.next();
-		return resultSet.getInt("max_swarm_size");
-	}
-
-	private Integer getMaxSwarmSize(String date, Connection connection) throws SQLException {
-		return getMaxSwarmSize(date, null, connection);
+		
+		JSONObject main = new JSONObject();
+		JSONObject notLocatable = new JSONObject();
+		JSONObject data = new JSONObject();
+		data.put("csv", "/kraken-ui/csv"); //TODO make this right
+		JSONObject dateObj = new JSONObject();
+		dateObj.put("value", date);
+		dateObj.put("format", "YYYY-MM-DD");
+		data.put("date", dateObj);
+		main.put("data", data);
+		main.put("types", this.getTypes());
+		notLocatable.put("label", "Not Locatable");
+		notLocatable.put("values", notLocatableValues);
+		main.put("not-locatable", notLocatable);
+		main.put("countries", new JSONArray().addAll(countries.values()));
+		return main;
 	}
 	
+	public String getDataAsCsv(String date, String type) {
+		StringBuffer b = new StringBuffer();
+		
+		try (Connection connection = MySQLConnectionFactory.getMySQlConnection())
+		{
+			if(date == null || !Validation.validateDate(date)) {
+				date = getNewestDate();
+			}
+			PreparedStatement stmt = connection.prepareStatement(
+			"SELECT countryCode, continent, name, label, unit, value FROM Type, Data" + 
+			"WHERE date = ?" +
+			"AND Type.name = ?" +
+			"AND Type.ID = Data.TypeID" +
+			"ORDER BY `Data`.`countryCode` `Data`.`name`  ASC");
+			
+			stmt.setString(1, date);
+			stmt.setString(2, type);
+			stmt.execute();
+			
+			ResultSet rs = stmt.getResultSet();
+			while(rs.next()){
+				b.append(rs.getString(1)).append(", ");
+				b.append(rs.getString(2)).append(", ");
+				b.append(rs.getString(3)).append(", ");
+				b.append(rs.getString(4)).append(", ");
+				b.append(rs.getString(5)).append(", ");
+				b.append(rs.getString(6)).append(", ");
+				b.append("\nr");
+			}
+			
+		} catch (SQLException e) {
+			log.error("Error in getSpecificMapDataAsCsv({},{})", date, type, e);
+		}
+			
+		return b.toString();	
+	}
+
+
+	private String getNewestDate(){
+		String start="";
+		try (Connection connection = MySQLConnectionFactory.getMySQlConnection())
+		{
+			Statement stm = connection.createStatement();
+			stm.execute("SELECT MAX(date) AS date FROM Data");
+			ResultSet rs = stm.getResultSet();
+			rs.next();
+			start = rs.getString("date");
+		} catch(SQLException e) {
+			log.error("Error in getNewestDate()", e);
+		}
+		return start;
+	}
 }

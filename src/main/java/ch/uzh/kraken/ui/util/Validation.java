@@ -7,7 +7,7 @@ public class Validation {
 
 	public static boolean validateInfoHash(String infoHash) {
 		// infoHash as string is 40 characters long!
-		if(infoHash == null || !infoHash.matches("[0-9A-Fa-f]{40}")) {
+		if(infoHash == null || !infoHash.matches("[0-9A-Fa-f]{1,40}")) {
 			return false;
 		}
 		else {

@@ -1,35 +1,49 @@
 package ch.uzh.kraken.ui.database.api;
 
+import org.json.simple.JSONObject;
+
+/**
+ * @author Andri
+ *
+ */
+/**
+ * @author Andri
+ *
+ */
 public interface IDataAdaptor {
 	
 	/**
 	 * @return expected:
 	 * {"FROM_DATE":"2014-09-10","TO_DATE":"2014-09-15"}
 	 */
-	public String getDateBoundsTorrentListAsJSON();
+	public JSONObject getDateBounds();
+	
+	/**
+	 * @param name
+	 * @return expected:
+	 * {
+	 *   "name":"A unique name",
+	 *   "label":"Human readable label used in UI",
+	 *   "unit":"Unit used in UI. Optional"
+	 * }
+	 */
+	public JSONObject getType(String name);
 	
 	
 	/**
-	 * @param date
-	 * @param infoHash
-	 * @return expected:{  
-     *	"DATE":"2014-09-12",
-     *	"INFO_HASH":"8600313422E2D8EBC2CDA3CA04718A8A7FE33282",
-     *	"NOT_LOCATABLE_PERCENTAGE":0.0274,
-     *	"COUNTRIES":[  
-     *    {  
-     *       "OBSERVED_PEERS":3235,
-     *       "PERCENTAGE":88.703,
-     *       "COUNTRY_CODE":"ES",
-     *       "MAX_SWARM_SIZE":841
-     *   },
-     *   ...
-     *		],
-     *	"NOT_LOCATABLE_PEERS":1
-     * }
+	 * @return expected:
+	 * 
+	 * { "types":[
+	 *   {
+	 *     "name":"A unique name",
+	 *     "label":"Human readable label used in UI",
+	 *     "unit":"Unit used in UI. Optional"
+	 *   },
+	 *   ...
+	 *   ]
+	 * }
 	 */
-	public String getSpecificMapDataAsJson(String date, String type);
-	
+	public JSONObject getTypes();
 	
 	/**
 	 * @param date
@@ -48,8 +62,7 @@ public interface IDataAdaptor {
 	 *	"NOT_LOCATABLE_PEERS":5
 	 * }
 	 */
-	public String getGenericMapDataAsJson(String date);
+	public JSONObject getMapData(String date);
 	
-	public String getSpecificMapDataAsCsv(String date, String infoHash);
-	public String getGenericMapDataAsCsv(String date);
+	public String getDataAsCsv(String date, String type);
 }

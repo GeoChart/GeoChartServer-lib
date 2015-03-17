@@ -11,15 +11,12 @@ import javax.servlet.http.HttpServletResponse;
 import ch.uzh.kraken.ui.database.api.DataFactory;
 import ch.uzh.kraken.ui.util.Util;
 
-@WebServlet("/request/specific-map.json")
-public class DBSpecificMapServlet extends HttpServlet {
+@WebServlet("/request/dateBounds.json")
+public class DateBoundsServlet extends HttpServlet {
 
-	private static final long serialVersionUID = 6607701710001078316L;
+	private static final long serialVersionUID = -7855451053390085840L;
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		final String date = Util.getParameterValue(request, "date");
-		final String infoHash = Util.getParameterValue(request, "infoHash");
-
-		Util.writeJsonResponse(response, DataFactory.getDataInterface().getSpecificMapDataAsJson(date, infoHash));
+		Util.writeJsonResponse(response, DataFactory.getDataInterface().getDateBounds().toJSONString());
 	}
 }

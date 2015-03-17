@@ -1,4 +1,4 @@
-package ch.uzh.kraken.ui.servlet.csv;
+package ch.uzh.kraken.ui.servlet.request;
 
 import java.io.IOException;
 
@@ -16,7 +16,7 @@ import ch.uzh.kraken.ui.util.Util;
  * Servlet implementation class DBMapServletCsv
  */
 @WebServlet("/request/specific-map.csv")
-public class DBSpecificMapServletCsv extends HttpServlet {
+public class CSVMapDataServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 4123393922472928833L;
 
@@ -27,7 +27,7 @@ public class DBSpecificMapServletCsv extends HttpServlet {
 		if(date != null && infoHash != null) {
 			final String filename = "kraken-map-data-" + date + "-" + infoHash + ".csv";
 
-			Util.writeCsvResponse(response, DataFactory.getDataInterface().getSpecificMapDataAsCsv(date, infoHash), filename);
+			Util.writeCsvResponse(response, DataFactory.getDataInterface().getDataAsCsv(date, infoHash).toLowerCase(), filename);
 		}
 		else {
 			Util.writeJsonResponse(response, JsonErrors.createStandardJsonError().toString());

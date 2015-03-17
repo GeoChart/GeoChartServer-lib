@@ -11,13 +11,13 @@ import javax.servlet.http.HttpServletResponse;
 import ch.uzh.kraken.ui.database.api.DataFactory;
 import ch.uzh.kraken.ui.util.Util;
 
-@WebServlet("/request/generic-map.json")
-public class DBGenericMapServlet extends HttpServlet {
+@WebServlet("/request/map-data.json")
+public class MapDataServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 6607701710001078316L;
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		final String date = Util.getParameterValue(request, "date");
-		Util.writeJsonResponse(response, DataFactory.getDataInterface().getGenericMapDataAsJson(date));
+		Util.writeJsonResponse(response, DataFactory.getDataInterface().getMapData(date).toJSONString());
 	}
 }
