@@ -1,11 +1,11 @@
-package ch.uzh.kraken.ui.database.api;
+package ch.uzh.geoViz.database.api;
 
 import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.uzh.kraken.ui.util.Util;
+import ch.uzh.geoViz.util.Util;
 
 public class DataFactory {
 	

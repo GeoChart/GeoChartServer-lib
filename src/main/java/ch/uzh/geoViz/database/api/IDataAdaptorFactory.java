@@ -1,4 +1,4 @@
-package ch.uzh.kraken.ui.database.api;
+package ch.uzh.geoViz.database.api;
 
 public interface IDataAdaptorFactory {
 

@@ -1,4 +1,4 @@
-package ch.uzh.kraken.ui.servlet.request;
+package ch.uzh.geoViz.servlet.request;
 
 import java.io.IOException;
 
@@ -8,8 +8,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import ch.uzh.kraken.ui.database.api.DataFactory;
-import ch.uzh.kraken.ui.util.Util;
+import ch.uzh.geoViz.database.api.DataFactory;
+import ch.uzh.geoViz.util.Util;
 
 @WebServlet("/request/dateBounds.json")
 public class DateBoundsServlet extends HttpServlet {

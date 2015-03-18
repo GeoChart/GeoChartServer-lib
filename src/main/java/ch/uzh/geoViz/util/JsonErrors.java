@@ -1,4 +1,4 @@
-package ch.uzh.kraken.ui.util;
+package ch.uzh.geoViz.util;
 
 import org.json.simple.JSONObject;
 

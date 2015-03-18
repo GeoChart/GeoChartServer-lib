@@ -1,4 +1,4 @@
-package ch.uzh.kraken.ui.database.MySQL;
+package ch.uzh.geoViz.database.MySQL;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,10 +12,10 @@ import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.uzh.kraken.ui.database.api.IDataAdaptor;
-import ch.uzh.kraken.ui.database.api.IDataAdaptorFactory;
-import ch.uzh.kraken.ui.util.JsonErrors;
-import ch.uzh.kraken.ui.util.Validation;
+import ch.uzh.geoViz.database.api.IDataAdaptor;
+import ch.uzh.geoViz.database.api.IDataAdaptorFactory;
+import ch.uzh.geoViz.util.JsonErrors;
+import ch.uzh.geoViz.util.Validation;
 
 public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 

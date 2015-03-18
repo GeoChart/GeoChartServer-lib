@@ -1,4 +1,4 @@
-package ch.uzh.kraken.ui.database.MySQL;
+package ch.uzh.geoViz.database.MySQL;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -8,7 +8,7 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.uzh.kraken.ui.util.Util;
+import ch.uzh.geoViz.util.Util;
 
 public class MySQLConnectionFactory {
 	private static Logger log = LoggerFactory.getLogger(MySQLConnectionFactory.class);

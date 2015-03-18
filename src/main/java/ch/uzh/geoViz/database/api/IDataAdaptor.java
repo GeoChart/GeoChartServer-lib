@@ -1,4 +1,4 @@
-package ch.uzh.kraken.ui.database.api;
+package ch.uzh.geoViz.database.api;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
