@@ -15,7 +15,7 @@ import ch.uzh.kraken.ui.util.Util;
 /**
  * Servlet implementation class DBMapServletCsv
  */
-@WebServlet("/request/specific-map.csv")
+@WebServlet("/request/map.csv")
 public class CSVMapDataServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 4123393922472928833L;

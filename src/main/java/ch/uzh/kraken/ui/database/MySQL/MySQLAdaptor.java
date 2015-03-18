@@ -85,7 +85,7 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 	}
 
 	@Override
-	public JSONObject getTypes() {
+	public JSONArray getTypes() {
 		JSONObject obj = new JSONObject();
 		JSONArray array = new JSONArray();
 		try (Connection connection = MySQLConnectionFactory.getMySQlConnection())
@@ -104,7 +104,7 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 			log.error("Error in getTypes()", e);
 		}
 		obj.put("types", array);
-		return obj;
+		return array;
 	}
 
 	@Override
@@ -117,10 +117,10 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 				date = getNewestDate();
 			}
 			PreparedStatement stmt = connection.prepareStatement(
-			"SELECT countryCode, name, label, unit, value FROM Type, Data" + 
-			"WHERE date = ?" +
-			"AND Type.ID = Data.TypeID" +
-			"ORDER BY `Data`.`countryCode` `Data`.`name`  ASC");
+			"SELECT countryCode, name, label, unit, value FROM Type, Data " + 
+			"WHERE date = ? " +
+			"AND Type.ID = Data.TypeID " +
+			"ORDER BY `Data`.`countryCode`, `Type`.`name`  ASC");
 			
 			stmt.setString(1, date);
 			stmt.execute();
@@ -128,7 +128,7 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 			while(rs.next()){
 				String country = rs.getString(1);
 				JSONObject countryObject;
-				if(country.isEmpty()){
+				if(country == null || country.isEmpty()){
 					countryObject = notLocatableValues;
 				} else {
 					if(countries.containsKey(country)){
@@ -150,7 +150,7 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 		JSONObject main = new JSONObject();
 		JSONObject notLocatable = new JSONObject();
 		JSONObject data = new JSONObject();
-		data.put("csv", "/kraken-ui/csv"); //TODO make this right
+		data.put("csv", "/request/map.csv"); //TODO make this right
 		JSONObject dateObj = new JSONObject();
 		dateObj.put("value", date);
 		dateObj.put("format", "YYYY-MM-DD");
@@ -160,7 +160,7 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 		notLocatable.put("label", "Not Locatable");
 		notLocatable.put("values", notLocatableValues);
 		main.put("not-locatable", notLocatable);
-		main.put("countries", new JSONArray().addAll(countries.values()));
+		main.put("countries", countries);
 		return main;
 	}
 	

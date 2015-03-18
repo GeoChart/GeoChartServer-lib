@@ -1,5 +1,6 @@
 package ch.uzh.kraken.ui.database.api;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 /**
@@ -43,7 +44,7 @@ public interface IDataAdaptor {
 	 *   ]
 	 * }
 	 */
-	public JSONObject getTypes();
+	public JSONArray getTypes();
 	
 	/**
 	 * @param date

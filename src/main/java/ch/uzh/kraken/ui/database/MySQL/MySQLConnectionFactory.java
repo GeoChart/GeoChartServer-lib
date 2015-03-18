@@ -25,13 +25,13 @@ public class MySQLConnectionFactory {
 			String dbDatabase = properties.getProperty("database");
 			String dbUser = properties.getProperty("user");
 			String dbPassword = properties.getProperty("password");
-			String dbUseUnicode = properties.getProperty("useUnicode");
-			String dbCharacterEncoding = properties.getProperty("characterEncoding");
+			String dbUseUnicode = properties.getProperty("useUnicode", "true");
+			String dbCharacterEncoding = properties.getProperty("characterEncoding", "UTF-8");
 
 			String url = dbHost + "/" + dbDatabase;
 			url += "?user=" + dbUser + "&password=" + dbPassword;
 			url += "&useUnicode=" + dbUseUnicode + "&characterEncoding=" + dbCharacterEncoding;
-
+			log.debug("Connecting to DB: {}", url);
 			connection = DriverManager.getConnection(url);
 			log.info("Database connection established");
 		}
