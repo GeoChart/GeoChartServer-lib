@@ -21,7 +21,7 @@ public class DataFactory {
 	}
 	
 	private static void loadfactory(){
-		Properties properties = Util.readProperties("db.properties");
+		Properties properties = Util.getProperties();
 		String factoryClass = properties.getProperty("dataAdapterFactory");
 		log.info("Loading data adaptor factory: {}", factoryClass);
 				

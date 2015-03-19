@@ -22,7 +22,7 @@ public class CSVMapDataServlet extends HttpServlet {
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		final String date = Util.getParameterValue(request, "date");
-		final String infoHash = Util.getParameterValue(request, "infoHash");
+		final String infoHash = Util.getParameterValue(request, "type");
 
 		if(date != null && infoHash != null) {
 			final String filename = "kraken-map-data-" + date + "-" + infoHash + ".csv";

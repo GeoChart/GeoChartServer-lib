@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import ch.uzh.geoViz.database.MySQL.MySQLAdaptor;
+import ch.uzh.geoViz.util.Util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -16,6 +17,8 @@ public class MySQLAdaptorTest {
 	@Test
 	public void test() {
 		MySQLAdaptor mysql = new MySQLAdaptor();
+		
+		Util.setProperties(Util.readProperties("geoViz.properties"));
 		
 		System.out.println();
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();

@@ -19,7 +19,7 @@ public class MySQLConnectionFactory {
 			// this will load the MySQL driver, each DB has its own driver
 			Class.forName("com.mysql.jdbc.Driver");
 
-			Properties properties = Util.readProperties("db.properties");
+			Properties properties = Util.getProperties();
 
 			String dbHost = properties.getProperty("host");
 			String dbDatabase = properties.getProperty("database");

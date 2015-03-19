@@ -16,6 +16,9 @@ import org.slf4j.LoggerFactory;
 public class Util {
 
 	private static Logger log = LoggerFactory.getLogger(Util.class.getName());
+	
+	
+	private static Properties props;
 
 	public static void writeJsonResponse(HttpServletResponse response, String jsonString) {
 		try {
@@ -44,7 +47,16 @@ public class Util {
 		}
 	}
 
+	public static void setProperties(Properties props){
+		Util.props = props;
+	}
+	
+	public static Properties getProperties(){
+		return props;
+	}
+	
 	public static Properties readProperties(String propertiesFile) {
+		
 		try {
 			Properties properties = new Properties();
 			log.debug("loading properties from : {}", propertiesFile);
@@ -53,6 +65,8 @@ public class Util {
 			InputStream in = Util.class.getClassLoader().getResourceAsStream(propertiesFile);
 			if(in != null) {
 				properties.load(in);
+			}else{
+				log.error("No properties file found: {}",propertiesFile);
 			}
 
 			return properties;
