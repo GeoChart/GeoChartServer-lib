@@ -90,12 +90,12 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 		JSONArray array = new JSONArray();
 		try (Connection connection = MySQLConnectionFactory.getMySQlConnection())
 		{
-			PreparedStatement stm = connection.prepareStatement("SELECT * from Type");
+			PreparedStatement stm = connection.prepareStatement("SELECT * from Type ORDER BY ID ASC");
 			stm.execute();
 			ResultSet rs = stm.getResultSet();
 			while(rs.next()){
 				JSONObject type = new JSONObject();
-				type.put("name", rs.getString("name"));
+				type.put("type", rs.getString("name"));
 				type.put("label", rs.getString("label"));
 				type.put("unit", rs.getString("unit"));
 				array.add(type);
@@ -138,16 +138,13 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 						countries.put(country, countryObject);
 					}
 				}
-				Map<String, String> value = new JSONObject();
-				value.put("value", rs.getString("value"));
-				countryObject.put(rs.getString("name"), value);
+				countryObject.put(rs.getString("name"), rs.getString("value"));
 			}
 			
 		} catch (SQLException e) {
 			log.error("Error in getMapData({})", date, e);
 		}
 		
-		JSONObject main = new JSONObject();
 		JSONObject notLocatable = new JSONObject();
 		JSONObject data = new JSONObject();
 		data.put("csv", "/request/map.csv"); //TODO make this right
@@ -155,12 +152,13 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 		dateObj.put("value", date);
 		dateObj.put("format", "YYYY-MM-DD");
 		data.put("date", dateObj);
-		main.put("data", data);
-		main.put("types", this.getTypes());
+		data.put("types", this.getTypes());
 		notLocatable.put("label", "Not Locatable");
 		notLocatable.put("values", notLocatableValues);
-		main.put("not-locatable", notLocatable);
-		main.put("countries", countries);
+		data.put("not-locatable", notLocatable);
+		data.put("countries", countries);
+		JSONObject main = new JSONObject();
+		main.put("data", data);
 		return main;
 	}
 	
@@ -173,11 +171,11 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 				date = getNewestDate();
 			}
 			PreparedStatement stmt = connection.prepareStatement(
-			"SELECT countryCode, continent, name, label, unit, value FROM Type, Data" + 
-			"WHERE date = ?" +
-			"AND Type.name = ?" +
-			"AND Type.ID = Data.TypeID" +
-			"ORDER BY `Data`.`countryCode` `Data`.`name`  ASC");
+			"SELECT countryCode, continent, name, label, unit, value FROM Type, Data " + 
+			"WHERE date = ? " +
+			"AND Type.name = ? " +
+			"AND Type.ID = Data.TypeID " +
+			"ORDER BY `Data`.`countryCode`, `Type`.`name`  ASC");
 			
 			stmt.setString(1, date);
 			stmt.setString(2, type);
@@ -190,8 +188,8 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 				b.append(rs.getString(3)).append(", ");
 				b.append(rs.getString(4)).append(", ");
 				b.append(rs.getString(5)).append(", ");
-				b.append(rs.getString(6)).append(", ");
-				b.append("\nr");
+				b.append(rs.getString(6));
+				b.append("\n");
 			}
 			
 		} catch (SQLException e) {

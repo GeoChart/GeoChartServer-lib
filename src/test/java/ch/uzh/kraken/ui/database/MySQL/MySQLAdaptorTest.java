@@ -27,7 +27,9 @@ public class MySQLAdaptorTest {
 		String prettyJsonString = gson.toJson(el);
 		
 		System.out.println(prettyJsonString);
-		
+
+		System.out.println(mysql.getDataAsCsv("2015-03-07", "overall_unique_ipaddresses"));
+
 	}
 
 }
