@@ -111,15 +111,20 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 	public JSONObject getMapData(String date) {
 		Map<String, JSONObject> countries = new JSONObject();
 		JSONObject notLocatableValues = new JSONObject();
+		notLocatableValues.put("values", new JSONObject());
 		try (Connection connection = MySQLConnectionFactory.getMySQlConnection())
 		{
 			if(date == null || !Validation.validateDate(date)) {
 				date = getNewestDate();
 			}
 			PreparedStatement stmt = connection.prepareStatement(
-			"SELECT countryCode, name, label, unit, value FROM Type, Data " + 
+			"SELECT Data.countryCode, Type.name as name, Type.label, Type.unit, " +
+			"Data.value, continents.name continent, countries.name as countryLabel " +
+			"FROM Type, Data, continents, countries " + 
 			"WHERE date = ? " +
 			"AND Type.ID = Data.TypeID " +
+			"AND Data.countryCode = countries.code " +
+			"AND countries.continent_code = continents.code " +
 			"ORDER BY `Data`.`countryCode`, `Type`.`name`  ASC");
 			
 			stmt.setString(1, date);
@@ -127,6 +132,9 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 			ResultSet rs = stmt.getResultSet();
 			while(rs.next()){
 				String country = rs.getString(1);
+				String countryLabel = rs.getString("countryLabel");
+				String continent = rs.getString("continent");
+				
 				JSONObject countryObject;
 				if(country == null || country.isEmpty()){
 					countryObject = notLocatableValues;
@@ -135,10 +143,15 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 						countryObject = countries.get(country);
 					}else{
 						countryObject = new JSONObject();
+						countryObject.put("values", new JSONObject());
+						countryObject.put("code", country);
+						countryObject.put("label", countryLabel);
+						countryObject.put("continent", continent);
+						
 						countries.put(country, countryObject);
 					}
 				}
-				countryObject.put(rs.getString("name"), rs.getString("value"));
+				((JSONObject)countryObject.get("values")).put(rs.getString("name"), rs.getString("value"));
 			}
 			
 		} catch (SQLException e) {

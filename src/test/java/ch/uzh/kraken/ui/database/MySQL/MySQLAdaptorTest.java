@@ -2,6 +2,7 @@ package ch.uzh.kraken.ui.database.MySQL;
 
 import static org.junit.Assert.*;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ch.uzh.geoViz.database.MySQL.MySQLAdaptor;
@@ -14,7 +15,8 @@ import com.google.gson.JsonParser;
 
 public class MySQLAdaptorTest {
 
-	@Test
+	
+	@Test@Ignore
 	public void test() {
 		MySQLAdaptor mysql = new MySQLAdaptor();
 		
