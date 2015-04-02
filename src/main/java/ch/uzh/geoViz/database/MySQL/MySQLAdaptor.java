@@ -27,6 +27,7 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 		return new MySQLAdaptor();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public JSONObject getDateBounds() {
 		JSONObject obj = new JSONObject();
@@ -63,6 +64,7 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 	         	 *   ]
 	         	 * }
 	         	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public JSONObject getType(String name) {
 		JSONObject obj = new JSONObject();
@@ -84,6 +86,7 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 		return obj;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public JSONArray getTypes() {
 		JSONObject obj = new JSONObject();
@@ -107,6 +110,7 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 		return array;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public JSONObject getMapData(String date) {
 		Map<String, JSONObject> countries = new JSONObject();
@@ -118,15 +122,13 @@ public class MySQLAdaptor implements IDataAdaptor, IDataAdaptorFactory {
 				date = getNewestDate();
 			}
 			PreparedStatement stmt = connection.prepareStatement(
-			"SELECT Data.countryCode, Type.name as name, Type.label, Type.unit, " +
-			"Data.value, continents.name continent, countries.name as countryLabel " +
-			"FROM Type, Data, continents, countries " + 
-			"WHERE date = ? " +
-			"AND Type.ID = Data.TypeID " +
-			"AND Data.countryCode = countries.code " +
-			"AND countries.continent_code = continents.code " +
-			"ORDER BY `Data`.`countryCode`, `Type`.`name`  ASC");
-			
+					"SELECT Data.countryCode, Type.name as name, Type.label, Type.unit, " +
+					"Data.value, continents.name continent, countries.name as countryLabel " + 
+					"FROM Data JOIN (Type, continents, countries) "+
+					"ON (Data.TypeID = Type.ID AND Data.countryCode = countries.code AND countries.continent_code = continents.code) "+
+					"WHERE Data.date = '2015-03-06' " +
+					"ORDER BY `Data`.`countryCode`  ASC");			
+				
 			stmt.setString(1, date);
 			stmt.execute();
 			ResultSet rs = stmt.getResultSet();
